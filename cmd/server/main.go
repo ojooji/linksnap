@@ -18,6 +18,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/ojooji/linksnap/internal/config"
+	"github.com/ojooji/linksnap/internal/handler"
 	"github.com/ojooji/linksnap/internal/repository"
 )
 
@@ -43,16 +44,17 @@ func main() {
 	defer pool.Close()
 
 	repo := repository.NewPostgres(pool)
-	_ = repo // TODO: wire handlers in next branch
+	h := handler.New(repo, cfg.BaseURL)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, "db unavailable", http.StatusServiceUnavailable)
 			return
 		}
 		fmt.Fprintln(w, "ok")
 	})
+	h.Register(mux)
 
 	srv := &http.Server{Addr: ":" + cfg.ServerPort, Handler: mux}
 
