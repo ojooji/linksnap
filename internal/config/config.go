@@ -11,6 +11,7 @@ import (
 
 type Config struct {
 	ServerPort string
+	BaseURL    string
 	DBHost     string
 	DBPort     string
 	DBName     string
@@ -21,8 +22,10 @@ type Config struct {
 func Load() (Config, error) {
 	_ = godotenv.Load()
 
+	port := env("SERVER_PORT", "8080")
 	cfg := Config{
-		ServerPort: env("SERVER_PORT", "8080"),
+		ServerPort: port,
+		BaseURL:    env("BASE_URL", "http://localhost:"+port),
 		DBHost:     env("DB_HOST", "localhost"),
 		DBPort:     env("DB_PORT", "5432"),
 		DBName:     os.Getenv("DB_NAME"),
