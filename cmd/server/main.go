@@ -20,6 +20,7 @@ import (
 	"github.com/ojooji/linksnap/internal/config"
 	"github.com/ojooji/linksnap/internal/handler"
 	"github.com/ojooji/linksnap/internal/repository"
+	"github.com/ojooji/linksnap/web"
 )
 
 func main() {
@@ -47,6 +48,10 @@ func main() {
 	h := handler.New(repo, cfg.BaseURL)
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(web.IndexHTML)
+	})
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, "db unavailable", http.StatusServiceUnavailable)
